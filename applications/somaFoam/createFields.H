@@ -249,6 +249,35 @@
 		mesh,
 		dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
 	);
+	
+	
+	volScalarField capCharge
+	(
+		IOobject
+		(
+		    "QC",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::READ_IF_PRESENT,
+		    IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedScalar("zero", dimensionSet(0, 0, 0, 0, 0), 0.0)
+	);
+	
+	surfaceScalarField meshSize
+	(
+		IOobject
+		(
+		    "meshSize",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::READ_IF_PRESENT,
+		    IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedScalar("zero", dimensionSet(0, 0, 0, 0, 0), 0.0)
+	);
 
 
 	

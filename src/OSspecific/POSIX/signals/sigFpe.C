@@ -67,7 +67,8 @@ void* Foam::sigFpe::my_malloc_hook(size_t size, const void *caller)
     void *result;
 
     // Restore all old hooks
-    __malloc_hook = old_malloc_hook;
+    // Commented to compile with new gcc
+    //    __malloc_hook = old_malloc_hook;
 
     // Call recursively
     result = malloc (size);
@@ -102,7 +103,8 @@ void* Foam::sigFpe::my_malloc_hook(size_t size, const void *caller)
 #   endif
 
     // Restore our own hooks
-    __malloc_hook = my_malloc_hook;
+    // Commented to compile with new gcc
+    //__malloc_hook = my_malloc_hook;
 
     return result;
 }
@@ -199,11 +201,12 @@ Foam::sigFpe::~sigFpe()
     {
 #       ifdef LINUX_GNUC
 
+	// Commented to compile with newer gcc
         // Reset to standard malloc
-        if (oldAction_.sa_handler)
-        {
-            __malloc_hook = old_malloc_hook;
-        }
+        //if (oldAction_.sa_handler)
+        //{
+        //    __malloc_hook = old_malloc_hook;
+        //}
 
             #       elif defined(__APPLE__)
 
@@ -348,7 +351,8 @@ void Foam::sigFpe::set(const bool verbose)
 #       ifdef LINUX_GNUC
 
         // Set our malloc
-        __malloc_hook = Foam::sigFpe::my_malloc_hook;
+        // Commented to compile on newer gcc
+        //__malloc_hook = Foam::sigFpe::my_malloc_hook;
 
 #elif defined(__APPLE__)
 

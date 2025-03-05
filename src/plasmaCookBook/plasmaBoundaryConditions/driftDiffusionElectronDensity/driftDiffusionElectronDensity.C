@@ -100,8 +100,8 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     this->refGrad() = 0.0;
     this->valueFraction() = 0.0;
     fvPatchField<scalar>::operator=(this->patchInternalField());
-    Info << "Edepend = " << Edepend_ << endl;
-    Info << "FE_ = " << FE_ << endl;
+    //Info << "Edepend = " << Edepend_ << endl;
+    //Info << "FE_ = " << FE_ << endl;
     //Info << "work function = " << wf_ << endl;
     //Info << "field_enhancement_factor " << beta_ << endl; 
 }

@@ -1,5 +1,5 @@
 
-#line 3 "lex.yy.cc"
+#line 2 "lex.yy.cc"
 
 #define  YY_INT_ALIGNED short int
 
@@ -5338,7 +5338,7 @@ STLLexer::STLLexer(std::istream* is, const label approxNpoints)
 
 #define YY_DECL int STLLexer::lex()
 
-#line 5342 "lex.yy.cc"
+#line 5341 "lex.yy.cc"
 #line 195 "triSurface/triSurface/interfaces/STL/readSTLASCII.L"
  /* ------------------------------------------------------------------------ *\
                       -----  Exclusive start states -----
@@ -5349,7 +5349,7 @@ STLLexer::STLLexer(std::istream* is, const label approxNpoints)
 
 
 
-#line 5353 "lex.yy.cc"
+#line 5352 "lex.yy.cc"
 
 #define INITIAL 0
 #define readSolidName 1
@@ -5528,7 +5528,7 @@ YY_DECL
 
  /*                      ------ Reading control header ------                */
 
-#line 5532 "lex.yy.cc"
+#line 5531 "lex.yy.cc"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -5769,7 +5769,7 @@ YY_RULE_SETUP
 #line 381 "triSurface/triSurface/interfaces/STL/readSTLASCII.L"
 ECHO;
 	YY_BREAK
-#line 5773 "lex.yy.cc"
+#line 5772 "lex.yy.cc"
 
 	case YY_END_OF_BUFFER:
 		{

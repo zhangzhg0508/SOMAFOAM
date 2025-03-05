@@ -67,10 +67,11 @@ int main(int argc, char *argv[])
 			{
 
 				#include "attachPatches.H"
-
-
-    	   		#include "solvePoissonD.H"
-			
+                        	
+				while (pimple.correct())
+				{
+    	   			    #include "solvePoissonD.H"
+				}
 				#include "detachPatches.H"
 
 				#include "plasmaEqn.H"
@@ -81,17 +82,20 @@ int main(int argc, char *argv[])
 		       	
 			}	
 			
+			gradTe = mspm().gradTe();
+				
 			
+		     	scalar Cofactor = mspm().divFe();
 
-		    scalar Cofactor = mspm().divFe();
+        		scalar Cofactor2 = pem.ecorrect(chemistry, E);
 
-		    scalar deltaTNew = MaxCo/(Cofactor+1e-10);
+		    	scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 
-		    deltaTNew = min(deltaTNew,deltaTMax);
+		    	deltaTNew = min(deltaTNew,deltaTMax);
 
-		    deltaTNew = max(deltaTNew,deltaTMin);
+		    	deltaTNew = max(deltaTNew,deltaTMin);
 
-		    runTime.setDeltaT(deltaTNew);
+		    	runTime.setDeltaT(deltaTNew);
 
 		    //Info << "New timestep = " << runTime.deltaTValue() << endl;
 
@@ -133,7 +137,7 @@ int main(int argc, char *argv[])
 
 			    forAll(composition.Y(), i)
 			    {
-					/*volScalarField specN
+					volScalarField specN
 					(
 						IOobject
 						(
@@ -144,8 +148,8 @@ int main(int argc, char *argv[])
 						mspm().N(i),
 						Y[i].boundaryField().types()
 					);
-					specN.write();*/
-					mspm().N(i).write();
+					specN.write();
+					//mspm().N(i).write();
 			    }
 		    }
 		}
@@ -183,32 +187,23 @@ int main(int argc, char *argv[])
 
 		    }
 
-		    //pem.ecorrect(chemistry, E);	
-
-	//Info << "Te corrected " << endl;
-
-	
-
-
 			gradTe = mspm().gradTe();
 			
-			
-
 		    scalar Cofactor1 = mspm().divFe();
       
         scalar Cofactor2 = pem.ecorrect(chemistry, E);
             
         scalar Cofactor = max(Cofactor1,Cofactor2);
 
-        scalar meshParameter = mspm().meshParameter();
+        meshSize = mspm().meshParameter();
 
-		    Info << "Cofactor1 = " << Cofactor1 << endl;
+		    //Info << "Cofactor1 = " << Cofactor1 << endl;
             
-        Info << "Cofactor2 = " << Cofactor2 << endl;
+        //Info << "Cofactor2 = " << Cofactor2 << endl;
         
-        Info << "Cofactor = " << Cofactor << endl;
+        //Info << "Cofactor = " << Cofactor << endl;
 
-        Info << "Mesh Parameter = " << meshParameter << endl;
+        Info << "Mesh Size Reciprocal = " << gMax(meshSize) << endl;
 
 		    scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 
@@ -220,7 +215,7 @@ int main(int argc, char *argv[])
 
 		    Info << "New timestep = " << runTime.deltaTValue() << endl;
 
-		    Info << "Courant = " << Cofactor*runTime.deltaTValue() << endl;
+		    //Info << "Courant = " << Cofactor*runTime.deltaTValue() << endl;
 
 		    if (runTime.write() && restartCapabale)
 		    {   

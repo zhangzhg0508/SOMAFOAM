@@ -554,11 +554,11 @@ Foam::multiSpeciesPlasmaModel::divFe()
 
 }
 
-Foam::scalar 
+Foam::surfaceScalarField 
 Foam::multiSpeciesPlasmaModel::meshParameter()
 {
     
-    surfaceScalarField gradNeOverNeDelta
+    surfaceScalarField gradNeOverNe
     (
             IOobject
             (
@@ -568,12 +568,12 @@ Foam::multiSpeciesPlasmaModel::meshParameter()
                 IOobject::NO_READ,
                 IOobject::NO_WRITE
             ),
-            (fvc::interpolate(fvc::grad(N_[eIndex_])/N_[eIndex_]) & mesh_.Sf())/mesh_.magSf()/mesh_.deltaCoeffs()
+            (fvc::interpolate(fvc::grad(N_[eIndex_])/N_[eIndex_]) & mesh_.Sf())/mesh_.magSf()
     );
 
     
-    scalar maxValue = gMax(gradNeOverNeDelta);
-    return maxValue;
+    //scalar maxValue = gMax(gradNeOverNeDelta);
+    return gradNeOverNe;
 
 }
 

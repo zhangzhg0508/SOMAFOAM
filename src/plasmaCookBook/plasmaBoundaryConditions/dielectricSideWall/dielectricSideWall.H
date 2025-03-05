@@ -53,6 +53,7 @@ class dielectricSideWall
     public mixedFvPatchField<scalar>
 {
     // Private data
+   
 
     public:
 

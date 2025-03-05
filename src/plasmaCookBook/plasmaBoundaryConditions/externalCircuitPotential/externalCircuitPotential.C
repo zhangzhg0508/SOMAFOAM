@@ -27,9 +27,13 @@ externalCircuitPotential
     modelName_("directCurrent"),
     frequency_(0.0),
     bias_(0.0),
-    R_(0.0)
+    R_(0.0),
+    C_(1e20),
+    Phi_(p.size(), 0),
+    I_(0)
     //count_(0.0)
-{}
+{
+}
 
 
 Foam::externalCircuitPotential::
@@ -45,7 +49,10 @@ externalCircuitPotential
     modelName_(dict.lookupOrDefault<word>("model", "directCurrent")),
     frequency_(dict.lookupOrDefault<scalar>("frequency", 0.0)),
     bias_(dict.lookupOrDefault<scalar>("bias", 0.0)),
-    R_(dict.lookupOrDefault<scalar>("R", 0.0))
+    R_(dict.lookupOrDefault<scalar>("R", 0.0)),
+    C_(dict.lookupOrDefault<scalar>("C", 1e20)),
+    Phi_("Phi", dict, p.size()),
+    I_(dict.lookupOrDefault<scalar>("I", 0))
     //count_(0.0)
 {
     if (dict.found("value"))
@@ -71,11 +78,14 @@ externalCircuitPotential
 )
 :
     fixedValueFvPatchScalarField(ptf, p, iF, mapper),
-    amplitude_(ptf.amplitude_, mapper),
+    amplitude_(ptf.amplitude_),
     modelName_(ptf.modelName_),
     frequency_(ptf.frequency_),
     bias_(ptf.bias_),
-    R_(ptf.R_)
+    R_(ptf.R_),
+    C_(ptf.C_),
+    Phi_(ptf.Phi_),
+    I_(ptf.I_)
     //count_(ptf.count_)
 {}
 
@@ -91,7 +101,10 @@ externalCircuitPotential
     modelName_(tppsf.modelName_),
     frequency_(tppsf.frequency_),
     bias_(tppsf.bias_),
-    R_(tppsf.R_)
+    R_(tppsf.R_),
+    C_(tppsf.C_),
+    Phi_(tppsf.Phi_),
+    I_(tppsf.I_)
     //count_(tppsf.count_)
 {}
 
@@ -108,7 +121,10 @@ externalCircuitPotential
     modelName_(tppsf.modelName_),
     frequency_(tppsf.frequency_),
     bias_(tppsf.bias_),
-    R_(tppsf.R_)
+    R_(tppsf.R_),
+    C_(tppsf.C_),
+    Phi_(tppsf.Phi_),
+    I_(tppsf.I_)
     //count_(tppsf.count_)
 {}
 
@@ -123,24 +139,27 @@ void Foam::externalCircuitPotential::updateCoeffs()
         return;
     }
 
-    const volVectorField& Jtot =
+    const volScalarField& QC =
+        db().objectRegistry::lookupObject<volScalarField>("QC");
+        
+    const volVectorField& Jtotpatch =
         db().objectRegistry::lookupObject<volVectorField>("Jtot");
-
+        
     label patchi = this->patch().index();
-    const fvPatchVectorField& JtotPatch = Jtot.boundaryField()[patchi];
+    const fvPatchScalarField& QClocal = QC.boundaryField()[patchi];
 
     const fvMesh& mesh = patch().boundaryMesh().mesh();
-
-    scalar patchCurrent = 0.0;
+    
+    //Info << "Jtot = " << Jtot << endl;
 
     //Info << "JtotD = " << JtotDPatch << endl;
+    
+    scalar patchCurrent = gSum(Jtotpatch & mesh.Sf().boundaryField()[patchi]);
+    
+    Info << "patchCurrent = " << patchCurrent << endl;
 
-    forAll (JtotPatch,faceI)
-    {
-        patchCurrent += JtotPatch[faceI] & mesh.Sf().boundaryField()[patchi][faceI] ;
-    }
-
-    Info << "patchCurrent = " << patchCurrent << endl ;
+    
+    //Info << "Size = " << JtotPatch << endl;
 
     /*iSqrSum_ += sqr(patchCurrent)*this->db().time().deltaTValue();
     tSum_ += *this->db().time().deltaTValue();
@@ -158,22 +177,24 @@ void Foam::externalCircuitPotential::updateCoeffs()
 
         amplitude_ = amplitude_*(iRMS_/iDesired_)
     }*/
-
-
+	
+	//Info << "dIdt = " << dIdt << endl;
+	
     if (modelName_ == "directCurrent")
     {
-        Info << "V = " << amplitude_ + patchCurrent*R_;
-        operator==(amplitude_ + patchCurrent*R_) ;
+        Info << "V = " << amplitude_*(1-Foam::exp(-this->db().time().value()/C_)) + neg(patchCurrent)*patchCurrent*R_;
+        operator==(amplitude_*(1-Foam::exp(-this->db().time().value()/C_)) + neg(patchCurrent)*patchCurrent*R_) ;
     }
     else if (modelName_ == "cosFrequencyModulated")
     {
-        operator==(amplitude_*Foam::cos(2*mathematicalConstant::pi*frequency_*this->db().time().value()) + bias_ + patchCurrent*R_);
+        operator==(amplitude_*Foam::cos(2*mathematicalConstant::pi*frequency_*this->db().time().value()) + bias_);
     }
     else if (modelName_ == "sinFrequencyModulated")
     {
-        //Info << "V = " << (amplitude_*Foam::sin(2*mathematicalConstant::pi*frequency_*this->db().time().value()) + bias_ ) << endl;
-        //Info << "V = " << (amplitude_*Foam::sin(2*mathematicalConstant::pi*frequency_*this->db().time().value()) + bias_ + patchCurrent*R_) << endl;
-        operator==(amplitude_*Foam::sin(2*mathematicalConstant::pi*frequency_*this->db().time().value()) + bias_ + patchCurrent*R_);
+        Phi_ = amplitude_*Foam::sin(2*mathematicalConstant::pi*frequency_*this->db().time().value()) + bias_ + patchCurrent*R_ + QClocal/C_;
+        Info << "QC = " << QClocal[0] << endl;
+        Info << "Applied = " << amplitude_*Foam::sin(2*mathematicalConstant::pi*frequency_*this->db().time().value()) << endl;
+        operator==(Phi_);
     }
     else
     {
@@ -183,7 +204,9 @@ void Foam::externalCircuitPotential::updateCoeffs()
         )   << " model name inconsitent, model = " << modelName_
             << exit(FatalError);
     }
-
+	Info << "Phi_ = " << Phi_ << endl;
+	Info << "I_ = " << I_ << endl;
+	//Info << "patch size = " << this->size();
     fixedValueFvPatchScalarField::updateCoeffs();
 }
 
@@ -199,7 +222,12 @@ write(Ostream& os) const
     os.writeKeyword("bias")
         << bias_ << token::END_STATEMENT << nl;
     os.writeKeyword("R")
-        << R_ << token::END_STATEMENT << nl;
+        << R_  << token::END_STATEMENT << nl;
+    os.writeKeyword("C")
+        << C_ << token::END_STATEMENT << nl;
+    Phi_.writeEntry("Phi", os);
+    os.writeKeyword("I")
+        << I_ << token::END_STATEMENT << nl;
     writeEntry("value", os);
 }
 

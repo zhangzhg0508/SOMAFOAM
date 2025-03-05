@@ -36,12 +36,10 @@ public fixedValueFvPatchScalarField
     scalar frequency_;
     scalar bias_;
     scalar R_;
-    //scalar iSum_;
-    //scalar iRMS_;
-
-    //scalar iDesired_
-
-
+    scalar C_;
+    scalarField Phi_;
+    scalar I_;
+   
     	
   public:
 
@@ -112,6 +110,7 @@ public fixedValueFvPatchScalarField
 
 
     // Member functions
+    
 
     //- Update the coefficients associated with the patch field
     virtual void updateCoeffs();

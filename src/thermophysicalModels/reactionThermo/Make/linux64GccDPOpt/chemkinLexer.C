@@ -1,5 +1,5 @@
 
-#line 3 "lex.yy.cc"
+#line 2 "lex.yy.cc"
 
 #define  YY_INT_ALIGNED short int
 
@@ -35564,7 +35564,7 @@ Foam::word foamName(const Foam::string& s)
 
 #define YY_DECL int Foam::chemkinReader::lex()
 
-#line 35568 "lex.yy.cc"
+#line 35567 "lex.yy.cc"
 #line 183 "chemistryReaders/chemkinReader/chemkinLexer.L"
  /* ------------------------------------------------------------------------- *\
                       -----  Exclusive start states -----
@@ -35598,7 +35598,7 @@ Foam::word foamName(const Foam::string& s)
 
 
 
-#line 35602 "lex.yy.cc"
+#line 35601 "lex.yy.cc"
 
 #define INITIAL 0
 #define readElements 1
@@ -35890,7 +35890,7 @@ bool finishReaction = false;
     ------ Discard comments being careful to count comments
  \* ------------------------------------------------------------------------- */
 
-#line 35894 "lex.yy.cc"
+#line 35893 "lex.yy.cc"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -37330,7 +37330,7 @@ YY_RULE_SETUP
 #line 1538 "chemistryReaders/chemkinReader/chemkinLexer.L"
 ECHO;
 	YY_BREAK
-#line 37334 "lex.yy.cc"
+#line 37333 "lex.yy.cc"
 
 	case YY_END_OF_BUFFER:
 		{

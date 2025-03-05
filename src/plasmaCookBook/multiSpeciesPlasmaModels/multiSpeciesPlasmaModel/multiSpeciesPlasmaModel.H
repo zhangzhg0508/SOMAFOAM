@@ -224,7 +224,7 @@ public:
 
         scalar divFe();
         
-        scalar meshParameter();
+        surfaceScalarField meshParameter();
 
         tmp<volVectorField> gradTe();
 

@@ -51,6 +51,23 @@ Foam::dielectricSideWall::dielectricSideWall
     fvPatchField<scalar>::operator=(this->patchInternalField());
 }
 
+Foam::dielectricSideWall::
+dielectricSideWall
+(
+    const fvPatch& p,
+    const DimensionedField<scalar, volMesh>& iF,
+    const dictionary& dict
+)
+:
+    mixedFvPatchField<scalar>(p, iF)
+{
+	this->refValue() = 0.0;
+
+    this->refGrad() = 0.0;
+    this->valueFraction() = 0.0;
+	fvPatchField<scalar>::operator=(patchInternalField());
+}
+
 
 Foam::dielectricSideWall::dielectricSideWall
 (
@@ -69,34 +86,11 @@ Foam::dielectricSideWall::dielectricSideWall
 
 Foam::dielectricSideWall::dielectricSideWall
 (
-    const fvPatch& p,
-    const DimensionedField<scalar, volMesh>& iF,
-    const dictionary& dict
-)
-:
-    mixedFvPatchField<scalar>(p, iF)
-{
-    //Info << "Constructor 2 " << endl;
-    //Info << "seec_ " << seec_ << endl;
-    //Info << "fieldName = " << iF.name() << endl;
-    this->refValue() = 0.0;
-
-    this->refGrad() = 0.0;
-    this->valueFraction() = 0.0;
-    fvPatchField<scalar>::operator=(this->patchInternalField());
-}
-
-
-
-Foam::dielectricSideWall::dielectricSideWall
-(
     const dielectricSideWall& ptf
 )
 :
     mixedFvPatchField<scalar>(ptf)
 {
-    //Info << "Constructor 5" << endl;
-    fvPatchField<scalar>::operator=(this->patchInternalField());
 }
 
 

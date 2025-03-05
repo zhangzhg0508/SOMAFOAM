@@ -15,14 +15,14 @@ look for license file include with distribution.
 #include "volFields.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-Foam::plasmaPotential::
-plasmaPotential
+Foam::currentControlledElectrode::
+currentControlledElectrode
 (
     const fvPatch& p,
     const DimensionedField<scalar, volMesh>& iF
 )
 :
-    fixedValueFvPatchScalarField(p, iF),
+    fixedGradientFvPatchScalarField(p, iF),
     amplitude_(p.size(), 0.0),
     modelName_("directCurrent"),
     frequency_(0.0),
@@ -30,15 +30,15 @@ plasmaPotential
 {}
 
 
-Foam::plasmaPotential::
-plasmaPotential
+Foam::currentControlledElectrode::
+currentControlledElectrode
 (
     const fvPatch& p,
     const DimensionedField<scalar, volMesh>& iF,
     const dictionary& dict
 )
 :
-    fixedValueFvPatchScalarField(p, iF),
+    fixedGradientFvPatchScalarField(p, iF),
     amplitude_("amplitude", dict, p.size()),
     modelName_(dict.lookupOrDefault<word>("model", "directCurrent")),
     frequency_(dict.lookupOrDefault<scalar>("frequency", 0.0)),
@@ -57,16 +57,16 @@ plasmaPotential
     }
 }
 
-Foam::plasmaPotential::
-plasmaPotential
+Foam::currentControlledElectrode::
+currentControlledElectrode
 (
-    const plasmaPotential& ptf,
+    const currentControlledElectrode& ptf,
     const fvPatch& p,
     const DimensionedField<scalar, volMesh>& iF,
     const fvPatchFieldMapper& mapper
 )
 :
-    fixedValueFvPatchScalarField(ptf, p, iF, mapper),
+    fixedGradientFvPatchScalarField(ptf, p, iF, mapper),
     amplitude_(ptf.amplitude_, mapper),
     modelName_(ptf.modelName_),
     frequency_(ptf.frequency_),
@@ -74,13 +74,13 @@ plasmaPotential
 {}
 
 
-Foam::plasmaPotential::
-plasmaPotential
+Foam::currentControlledElectrode::
+currentControlledElectrode
 (
-    const plasmaPotential& tppsf
+    const currentControlledElectrode& tppsf
 )
 :
-    fixedValueFvPatchScalarField(tppsf),
+    fixedGradientFvPatchScalarField(tppsf),
     amplitude_(tppsf.amplitude_),
     modelName_(tppsf.modelName_),
     frequency_(tppsf.frequency_),
@@ -88,14 +88,14 @@ plasmaPotential
 {}
 
 
-Foam::plasmaPotential::
-plasmaPotential
+Foam::currentControlledElectrode::
+currentControlledElectrode
 (
-    const plasmaPotential& tppsf,
+    const currentControlledElectrode& tppsf,
     const DimensionedField<scalar, volMesh>& iF
 )
 :
-    fixedValueFvPatchScalarField(tppsf, iF),
+    fixedGradientFvPatchScalarField(tppsf, iF),
     amplitude_(tppsf.amplitude_),
     modelName_(tppsf.modelName_),
     frequency_(tppsf.frequency_),
@@ -105,36 +105,44 @@ plasmaPotential
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::plasmaPotential::autoMap
+void Foam::currentControlledElectrode::autoMap
 (
     const fvPatchFieldMapper& m
 )
 {
-    fixedValueFvPatchScalarField::autoMap(m);
+    fixedGradientFvPatchScalarField::autoMap(m);
     amplitude_.autoMap(m);
+    modelName_.autoMap(m);
+    frequency_.autoMap(m);
+    bias_.autoMap(m);
 }
 
 
-void Foam::plasmaPotential::rmap
+void Foam::currentControlledElectrode::rmap
 (
     const fvPatchScalarField& ptf,
     const labelList& addr
 )
 {
-    fixedValueFvPatchScalarField::rmap(ptf, addr);
+    fixedGradientFvPatchScalarField::rmap(ptf, addr);
 
-    const plasmaPotential& tiptf =
-        refCast<const plasmaPotential>(ptf);
+    const currentControlledElectrode& tiptf =
+        refCast<const currentControlledElectrode>(ptf);
 
     amplitude_.rmap(tiptf.amplitude_, addr);
+    modelName_.rmap(tiptf.modelName_, addr);
+    frequency_.rmap(tiptf.frequency_, addr);
+    bias_.rmap(tiptf.bias_, addr);
 }
 
-void Foam::plasmaPotential::updateCoeffs()
+void Foam::currentControlledElectrode::updateCoeffs()
 {
     if (updated())
     {
         return;
     }
+
+    fvPatch& patch = this->patch();
 
     if (modelName_ == "directCurrent")
     {
@@ -142,7 +150,9 @@ void Foam::plasmaPotential::updateCoeffs()
     }
     else if (modelName_ == "cosFrequencyModulated")
     {
-        operator==(amplitude_*Foam::cos(2*mathematicalConstant::pi*frequency_*this->db().time().value()) + bias_);
+        scalar desired_current_density = (amplitude_*Foam::cos(2*mathematicalConstant::pi*frequency_*this->db().time().value()) + bias_);
+        const fvPatchField<vector>& Ef = patch().lookupPatchField<volVectorField, vector>("E"); 
+        const fvPatchField<vector>& Jnet = patch().lookupPatchField<volVectorField, vector>("Jnet"); 
     }
     else if (modelName_ == "sinFrequencyModulated")
     {
